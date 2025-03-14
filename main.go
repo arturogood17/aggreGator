@@ -11,6 +11,7 @@ func main() {
 	if err != nil {
 		fmt.Println(err)
 	} else {
+		cfg.SetUser("nstapt")
 		fmt.Println(cfg.DbURL)
 		fmt.Println(cfg.CurrentUserName)
 	}

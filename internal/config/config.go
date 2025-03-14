@@ -11,6 +11,15 @@ type Config struct {
 	CurrentUserName string `json:"current_user_name"`
 }
 
+func (cfg *Config) SetUser(username string) ([]byte, error) {
+	cfg.CurrentUserName = username
+	jsonFile, err := json.Marshal(cfg)
+	if err != nil {
+		return []byte{}, err
+	}
+	return jsonFile, nil
+}
+
 func Read() (Config, error) {
 	file, err := getConfigFilePath()
 	if err != nil {
@@ -33,13 +42,4 @@ func Read() (Config, error) {
 		return Config{}, err
 	}
 	return cfg, nil
-}
-
-func (cfg *Config) SetUser(username string) ([]byte, error) {
-	cfg.CurrentUserName = username
-	jsonFile, err := json.Marshal(cfg)
-	if err != nil {
-		return []byte{}, err
-	}
-	return jsonFile, nil
 }

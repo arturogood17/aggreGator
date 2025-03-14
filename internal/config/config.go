@@ -12,24 +12,34 @@ type Config struct {
 }
 
 func Read() (Config, error) {
-	file, err := os.UserHomeDir()
+	file, err := getConfigFilePath()
 	if err != nil {
 		return Config{}, err
 	}
-	file += "/.gatorconfig.json" //Hay que buscar una forma de hacer una especie de NewRequest("Get", file)
 
 	jsonFile, err := os.Open(file)
 	if err != nil {
 		return Config{}, err
 	}
+
 	defer jsonFile.Close()
 	data, err := io.ReadAll(jsonFile)
 	if err != nil {
 		return Config{}, err
 	}
+
 	var cfg Config
 	if err := json.Unmarshal([]byte(data), &cfg); err != nil {
 		return Config{}, err
 	}
 	return cfg, nil
+}
+
+func (cfg *Config) SetUser(username string) ([]byte, error) {
+	cfg.CurrentUserName = username
+	jsonFile, err := json.Marshal(cfg)
+	if err != nil {
+		return []byte{}, err
+	}
+	return jsonFile, nil
 }

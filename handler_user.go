@@ -10,7 +10,7 @@ func handlerLogin(s *state, cmd command) error {
 	}
 	username := cmd.args[0]
 	err := s.cfg.SetUser(username)
-	if err != err {
+	if err != nil {
 		return fmt.Errorf("error setting user: %w", err)
 	}
 	fmt.Println("User set successfully.")

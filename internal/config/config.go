@@ -2,6 +2,7 @@ package config
 
 import (
 	"encoding/json"
+	"fmt"
 	"io"
 	"os"
 )
@@ -11,13 +12,15 @@ type Config struct {
 	CurrentUserName string `json:"current_user_name"`
 }
 
-func (cfg *Config) SetUser(username string) ([]byte, error) {
-	cfg.CurrentUserName = username
-	jsonFile, err := json.Marshal(cfg)
-	if err != nil {
-		return []byte{}, err
+func (cfg *Config) SetUser(username string) error {
+	if username == "" {
+		return fmt.Errorf("no valid username")
 	}
-	return jsonFile, nil
+	cfg.CurrentUserName = username
+	if err := write(*cfg); err != nil {
+		return err
+	}
+	return nil
 }
 
 func Read() (Config, error) {
@@ -42,4 +45,24 @@ func Read() (Config, error) {
 		return Config{}, err
 	}
 	return cfg, nil
+}
+
+func write(cfg Config) error {
+	path, err := getConfigFilePath()
+	if err != nil {
+		return err
+	}
+	file, err := os.Create(path)
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+	data, err := json.Marshal(cfg)
+	if err != nil {
+		return err
+	}
+	if _, err := file.Write(data); err != nil {
+		return err
+	}
+	return nil
 }

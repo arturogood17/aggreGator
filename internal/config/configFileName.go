@@ -1,5 +1,5 @@
 package config
 
 const (
-	fileName = "/.gatorconfig.json"
+	fileName = ".gatorconfig.json"
 )

@@ -1,13 +1,19 @@
 package main
 
 import (
+	"database/sql"
 	"log"
 	"os"
 
 	"github.com/arturogood17/aggreGator/internal/config"
+
+	"github.com/arturogood17/aggreGator/internal/database"
+
+	_ "github.com/lib/pq"
 )
 
 type state struct {
+	db  *database.Queries
 	cfg *config.Config
 }
 
@@ -22,7 +28,17 @@ func main() {
 	comnds := commands{
 		registeredcmds: make(map[string]func(*state, command) error),
 	}
+
+	db, err := sql.Open("postgres", programS.cfg.DbURL)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	dbQueries := database.New(db)
+	programS.db = dbQueries
+
 	comnds.register("login", handlerLogin)
+	comnds.register("register", registerLogin)
 
 	if len(os.Args) < 2 {
 		log.Fatal("Usage: cli <command> [args...]")

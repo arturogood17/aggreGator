@@ -52,3 +52,29 @@ func registerLogin(s *state, cmd command) error {
 	fmt.Println(user.Name)
 	return nil
 }
+
+func dbDelete(s *state, cmd command) error {
+	err := s.db.Delete(context.Background())
+	if err != nil {
+		fmt.Println("Failed to delete the db.")
+		return err
+	}
+	fmt.Println("Db deleted.")
+	return nil
+}
+
+func getUsers(s *state, cmd command) error {
+	users, err := s.db.GetUsers(context.Background())
+	if err != nil {
+		return err
+	}
+
+	for _, user := range users {
+		if user == s.cfg.CurrentUserName {
+			fmt.Printf("* %v (current)\n", user)
+			continue
+		}
+		fmt.Printf("* %v\n", user)
+	}
+	return nil
+}

@@ -25,6 +25,34 @@ func addFeed(s *state, cmd command) error {
 	if err != nil {
 		return err
 	}
-	fmt.Println(feed)
+	fmt.Println()
+	feedPrinting(feed)
+	fmt.Println()
+	return nil
+}
+
+func feedPrinting(f database.Feed) {
+	fmt.Println(f.ID)
+	fmt.Println(f.CreatedAt)
+	fmt.Println(f.UpdatedAt)
+	fmt.Println(f.Name)
+	fmt.Println(f.Url)
+	fmt.Println(f.UserID)
+}
+
+func feedList(s *state, cmd command) error {
+	feed_list, err := s.db.ListFeeds(context.Background())
+	if err != nil {
+		return err
+	}
+	for _, f := range feed_list {
+		fmt.Println(f.Name)
+		fmt.Println(f.Url)
+		user, err := s.db.GetUserByID(context.Background(), f.UserID)
+		if err != nil {
+			return err
+		}
+		fmt.Println(user.Name)
+	}
 	return nil
 }

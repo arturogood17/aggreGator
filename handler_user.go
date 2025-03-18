@@ -59,7 +59,7 @@ func dbDelete(s *state, cmd command) error {
 		fmt.Println("Failed to delete the db.")
 		return err
 	}
-	fmt.Println("Db deleted.")
+	fmt.Println("Users db deleted.")
 	return nil
 }
 

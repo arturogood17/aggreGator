@@ -42,6 +42,7 @@ func main() {
 	comnds.register("reset", dbDelete)
 	comnds.register("users", getUsers)
 	comnds.register("agg", Aggregation)
+	comnds.register("addfeed", addFeed)
 
 	if len(os.Args) < 2 {
 		log.Fatal("Usage: cli <command> [args...]")

@@ -26,14 +26,17 @@ func addFeed(s *state, cmd command) error {
 		return err
 	}
 	_, err = s.db.CreateFeedFollow(context.Background(), database.CreateFeedFollowParams{
-		ID: uuid.New(), CreatedAt: feed.CreatedAt, UpdatedAt: feed.UpdatedAt, UserID: UI.ID, FeedID: feed.ID,
+		ID: uuid.New(), CreatedAt: time.Now().UTC(), UpdatedAt: time.Now().UTC(), UserID: UI.ID, FeedID: feed.ID,
 	})
 	if err != nil {
 		return err
 	}
 	fmt.Println()
+	fmt.Println("Feed created successfully:")
 	feedPrinting(feed)
 	fmt.Println()
+	fmt.Println("Feed followed successfully:")
+	fmt.Println("=====================================")
 	return nil
 }
 
@@ -99,8 +102,12 @@ func followedList(s *state, cmd command) error {
 	if err != nil {
 		return err
 	}
+	if len(feeds) == 0 {
+		return errors.New("No feed follows found for this user.")
+	}
+	fmt.Println(user)
 	for _, f := range feeds {
-		fmt.Printf("%s - %s", user, f.Feed)
+		fmt.Printf("* %s", f.Feed)
 	}
 	return nil
 }

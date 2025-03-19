@@ -25,6 +25,12 @@ func addFeed(s *state, cmd command) error {
 	if err != nil {
 		return err
 	}
+	_, err = s.db.CreateFeedFollow(context.Background(), database.CreateFeedFollowParams{
+		ID: uuid.New(), CreatedAt: feed.CreatedAt, UpdatedAt: feed.UpdatedAt, UserID: UI.ID, FeedID: feed.ID,
+	})
+	if err != nil {
+		return err
+	}
 	fmt.Println()
 	feedPrinting(feed)
 	fmt.Println()
@@ -53,6 +59,48 @@ func feedList(s *state, cmd command) error {
 			return err
 		}
 		fmt.Println(user.Name)
+	}
+	return nil
+}
+
+func followFeed(s *state, cmd command) error {
+	if len(cmd.args) != 1 {
+		return errors.New("command usage: follow <url>")
+	}
+	url := cmd.args[0]
+	un := s.cfg.CurrentUserName
+	current_user, err := s.db.GetUser(context.Background(), un)
+	if err != nil {
+		return err
+	}
+	feed, err := s.db.FeedByURL(context.Background(), url)
+	if err != nil {
+		return err
+	}
+	followed, err := s.db.CreateFeedFollow(context.Background(), database.CreateFeedFollowParams{ID: uuid.New(), CreatedAt: time.Now().UTC(), UpdatedAt: time.Now().UTC(), UserID: current_user.ID, FeedID: feed.ID})
+	if err != nil {
+		return err
+	}
+	for _, v := range followed {
+		fmt.Println(v.FeedName)
+		fmt.Println(v.UserName)
+	}
+	return nil
+}
+
+func followedList(s *state, cmd command) error {
+	user := s.cfg.CurrentUserName
+	us, err := s.db.GetUser(context.Background(), user)
+	if err != nil {
+		return err
+	}
+	user_id := us.ID
+	feeds, err := s.db.GetFeedFollowsForUser(context.Background(), user_id)
+	if err != nil {
+		return err
+	}
+	for _, f := range feeds {
+		fmt.Printf("%s - %s", user, f.Feed)
 	}
 	return nil
 }

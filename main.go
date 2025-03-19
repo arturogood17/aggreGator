@@ -44,6 +44,8 @@ func main() {
 	comnds.register("agg", Aggregation)
 	comnds.register("addfeed", addFeed)
 	comnds.register("feeds", feedList)
+	comnds.register("follow", followFeed)
+	comnds.register("following", followedList)
 
 	if len(os.Args) < 2 {
 		log.Fatal("Usage: cli <command> [args...]")

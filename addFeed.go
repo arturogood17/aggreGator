@@ -10,23 +10,18 @@ import (
 	"github.com/google/uuid"
 )
 
-func addFeed(s *state, cmd command) error {
+func addFeed(s *state, cmd command, user database.User) error {
 	if len(cmd.args) < 2 {
 		return errors.New("provide name and url")
 	}
-	currentUser := s.cfg.CurrentUserName
-	UI, err := s.db.GetUser(context.Background(), currentUser)
-	if err != nil {
-		return err
-	}
 	feed, err := s.db.CreateFeed(context.Background(), database.CreateFeedParams{
 		ID: uuid.New(), CreatedAt: time.Now().UTC(), UpdatedAt: time.Now().UTC(),
-		Name: cmd.args[0], Url: cmd.args[1], UserID: UI.ID})
+		Name: cmd.args[0], Url: cmd.args[1], UserID: user.ID})
 	if err != nil {
 		return err
 	}
 	_, err = s.db.CreateFeedFollow(context.Background(), database.CreateFeedFollowParams{
-		ID: uuid.New(), CreatedAt: time.Now().UTC(), UpdatedAt: time.Now().UTC(), UserID: UI.ID, FeedID: feed.ID,
+		ID: uuid.New(), CreatedAt: time.Now().UTC(), UpdatedAt: time.Now().UTC(), UserID: user.ID, FeedID: feed.ID,
 	})
 	if err != nil {
 		return err
@@ -66,21 +61,15 @@ func feedList(s *state, cmd command) error {
 	return nil
 }
 
-func followFeed(s *state, cmd command) error {
+func followFeed(s *state, cmd command, user database.User) error {
 	if len(cmd.args) != 1 {
 		return errors.New("command usage: follow <url>")
 	}
-	url := cmd.args[0]
-	un := s.cfg.CurrentUserName
-	current_user, err := s.db.GetUser(context.Background(), un)
+	feed, err := s.db.FeedByURL(context.Background(), cmd.args[0])
 	if err != nil {
 		return err
 	}
-	feed, err := s.db.FeedByURL(context.Background(), url)
-	if err != nil {
-		return err
-	}
-	followed, err := s.db.CreateFeedFollow(context.Background(), database.CreateFeedFollowParams{ID: uuid.New(), CreatedAt: time.Now().UTC(), UpdatedAt: time.Now().UTC(), UserID: current_user.ID, FeedID: feed.ID})
+	followed, err := s.db.CreateFeedFollow(context.Background(), database.CreateFeedFollowParams{ID: uuid.New(), CreatedAt: time.Now().UTC(), UpdatedAt: time.Now().UTC(), UserID: user.ID, FeedID: feed.ID})
 	if err != nil {
 		return err
 	}
@@ -91,23 +80,32 @@ func followFeed(s *state, cmd command) error {
 	return nil
 }
 
-func followedList(s *state, cmd command) error {
-	user := s.cfg.CurrentUserName
-	us, err := s.db.GetUser(context.Background(), user)
-	if err != nil {
-		return err
-	}
-	user_id := us.ID
-	feeds, err := s.db.GetFeedFollowsForUser(context.Background(), user_id)
+func followedList(s *state, cmd command, user database.User) error {
+	feeds, err := s.db.GetFeedFollowsForUser(context.Background(), user.ID)
 	if err != nil {
 		return err
 	}
 	if len(feeds) == 0 {
-		return errors.New("No feed follows found for this user.")
+		fmt.Println("no feed follows found for this user")
+		return nil
 	}
 	fmt.Println(user)
 	for _, f := range feeds {
 		fmt.Printf("* %s", f.Feed)
+	}
+	return nil
+}
+
+func unfollow(s *state, cmd command, user database.User) error {
+	if len(cmd.args) != 1 {
+		return errors.New("command usage: unfollow <url>")
+	}
+	ToUnfollow, err := s.db.FeedByURL(context.Background(), cmd.args[0])
+	if err != nil {
+		return err
+	}
+	if err := s.db.DeleteFeed(context.Background(), database.DeleteFeedParams{UserID: user.ID, FeedID: ToUnfollow.ID}); err != nil {
+		return err
 	}
 	return nil
 }

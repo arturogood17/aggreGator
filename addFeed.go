@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"strconv"
 	"time"
 
 	"github.com/arturogood17/aggreGator/internal/database"
@@ -11,7 +12,7 @@ import (
 )
 
 func addFeed(s *state, cmd command, user database.User) error {
-	if len(cmd.args) < 2 {
+	if len(cmd.args) != 2 {
 		return errors.New("provide name and url")
 	}
 	feed, err := s.db.CreateFeed(context.Background(), database.CreateFeedParams{
@@ -106,6 +107,27 @@ func unfollow(s *state, cmd command, user database.User) error {
 	}
 	if err := s.db.DeleteFeed(context.Background(), database.DeleteFeedParams{UserID: user.ID, FeedID: ToUnfollow.ID}); err != nil {
 		return err
+	}
+	return nil
+}
+
+func browsePosts(s *state, cmd command, user database.User) error {
+	limit := 2
+	if len(cmd.args) == 1 {
+		if val, err := strconv.Atoi(cmd.args[0]); err != nil {
+			return err
+		} else {
+			limit = val
+		}
+	}
+	posts, err := s.db.PostsForUser(context.Background(), database.PostsForUserParams{UserID: user.ID, Limit: int32(limit)})
+	if err != nil {
+		return err
+	}
+	for _, p := range posts {
+		fmt.Printf("* %s\n", p.Title)
+		fmt.Printf("* %s\n", p.PublishedAt.Time)
+		fmt.Printf("* %s\n", p.Description.String)
 	}
 	return nil
 }

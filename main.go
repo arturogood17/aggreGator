@@ -1,16 +1,19 @@
 package main
 
 import (
+	"database/sql"
 	"errors"
-	"fmt"
 	"log"
 	"os"
 
 	"github.com/arturogood17/aggreGator/internal/config"
+	"github.com/arturogood17/aggreGator/internal/database"
+	_ "github.com/lib/pq"
 )
 
 type state struct {
-	cfg *config.Config
+	cfg     *config.Config
+	Queries *database.Queries
 }
 
 type command struct {
@@ -39,31 +42,30 @@ func main() {
 	if err != nil {
 		log.Fatalf("Error: %v", err)
 	}
-	s := state{
-		cfg: &config,
+	//Abro conexión a base de datos
+	db, err := sql.Open("postgres", config.DbURL)
+	if err != nil {
+		log.Fatalf("Error open connection to the database - %v", err)
+	}
+	defer db.Close() //Siempre hay que cerrar la base de datos
+	dbQueries := database.New(db)
+	s := &state{
+		cfg:     &config,
+		Queries: dbQueries,
 	}
 	mapCommands := commands{
 		cmds: make(map[string]func(*state, command) error),
 	}
 	//Register segment
 	mapCommands.register("login", handlerLogin)
+	mapCommands.register("register", handlerRegister)
 
 	//Run segment
-	var n string
-	var f []string
 	if len(os.Args) <= 1 {
 		log.Fatal("not enough arguments were provided")
-		os.Exit(1)
 	}
-	n = os.Args[1]
-	if len(os.Args) <= 2 {
-		log.Fatal("username is required")
-		os.Exit(1)
-	}
-	f = os.Args[2:]
-	err = mapCommands.run(&s, command{name: n, flags: f})
+	err = mapCommands.run(s, command{name: os.Args[1], flags: os.Args[2:]})
 	if err != nil {
 		log.Fatalf("Error running this command: %v. Error value: %v", os.Args[1], err)
 	}
-	fmt.Println(s.cfg.CurrentUserName)
 }

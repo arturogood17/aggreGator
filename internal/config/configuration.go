@@ -14,7 +14,7 @@ type Config struct {
 
 func (c *Config) SetUser(name string) error {
 	c.CurrentUserName = name
-	return write(c)
+	return write(*c)
 }
 
 func Read() (Config, error) {
@@ -38,7 +38,7 @@ func Read() (Config, error) {
 	return cfg, nil
 }
 
-func write(c *Config) error {
+func write(c Config) error {
 	jsoned, err := json.Marshal(c) //Creas el json
 	if err != nil {
 		fmt.Printf("error al intentar crear el json")

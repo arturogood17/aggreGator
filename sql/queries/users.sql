@@ -5,3 +5,9 @@ VALUES($1, $2, $3, $4) RETURNING *;
 -- name: GetUser :one
 SELECT * FROM users
 WHERE name = $1;
+
+-- name: AllUsers :many
+SELECT name FROM users;
+
+-- name: DeleteUsersTable :exec
+DELETE FROM users;

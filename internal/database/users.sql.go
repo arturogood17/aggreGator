@@ -12,6 +12,33 @@ import (
 	"github.com/google/uuid"
 )
 
+const allUsers = `-- name: AllUsers :many
+SELECT name FROM users
+`
+
+func (q *Queries) AllUsers(ctx context.Context) ([]string, error) {
+	rows, err := q.db.QueryContext(ctx, allUsers)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []string
+	for rows.Next() {
+		var name string
+		if err := rows.Scan(&name); err != nil {
+			return nil, err
+		}
+		items = append(items, name)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const createUser = `-- name: CreateUser :one
 INSERT INTO users(id, created_at, updated_at, name)
 VALUES($1, $2, $3, $4) RETURNING id, created_at, updated_at, name
@@ -39,6 +66,15 @@ func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, e
 		&i.Name,
 	)
 	return i, err
+}
+
+const deleteUsersTable = `-- name: DeleteUsersTable :exec
+DELETE FROM users
+`
+
+func (q *Queries) DeleteUsersTable(ctx context.Context) error {
+	_, err := q.db.ExecContext(ctx, deleteUsersTable)
+	return err
 }
 
 const getUser = `-- name: GetUser :one

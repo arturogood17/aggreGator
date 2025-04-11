@@ -59,6 +59,8 @@ func main() {
 	//Register segment
 	mapCommands.register("login", handlerLogin)
 	mapCommands.register("register", handlerRegister)
+	mapCommands.register("reset", handlerReset)
+	mapCommands.register("users", handlerAllUsers)
 
 	//Run segment
 	if len(os.Args) <= 1 {

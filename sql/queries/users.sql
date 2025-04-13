@@ -6,6 +6,10 @@ VALUES($1, $2, $3, $4) RETURNING *;
 SELECT * FROM users
 WHERE name = $1;
 
+-- name: GetUserByID :one
+SELECT * FROM users
+WHERE id = $1;
+
 -- name: AllUsers :many
 SELECT name FROM users;
 

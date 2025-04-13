@@ -28,13 +28,9 @@ func handlerFeedFuncs(s *state, cmd command) error {
 	return nil
 }
 
-func handlerAddFeed(s *state, cmd command) error {
+func handlerAddFeed(s *state, cmd command, user database.User) error {
 	if len(cmd.flags) != 2 {
 		log.Fatalf("usage: %v <name> <url>", cmd.name)
-	}
-	user, err := s.Queries.GetUser(context.Background(), s.cfg.CurrentUserName)
-	if err != nil {
-		return fmt.Errorf("error getting user to create feed - %v", err)
 	}
 	feed, err := s.Queries.CreateFeed(context.Background(), database.CreateFeedParams{
 		ID:     uuid.New(),
@@ -82,13 +78,9 @@ func handlerListFeeds(s *state, cmd command) error {
 	return nil
 }
 
-func handlerFollowFeed(s *state, cmd command) error {
+func handlerFollowFeed(s *state, cmd command, user database.User) error {
 	if len(cmd.flags) != 1 {
 		log.Fatalf("usage: %v <url>", cmd.name)
-	}
-	user, err := s.Queries.GetUser(context.Background(), s.cfg.CurrentUserName)
-	if err != nil {
-		return fmt.Errorf("error getting user to follow feed - %v", err)
 	}
 	feed, err := s.Queries.FeedByURL(context.Background(), cmd.flags[0])
 	if err != nil {
@@ -108,11 +100,7 @@ func handlerFollowFeed(s *state, cmd command) error {
 	return nil
 }
 
-func handlerFollowingFeeds(s *state, cmd command) error {
-	user, err := s.Queries.GetUser(context.Background(), s.cfg.CurrentUserName)
-	if err != nil {
-		return fmt.Errorf("error getting user to show list of followed feeds - %v", err)
-	}
+func handlerFollowingFeeds(s *state, cmd command, user database.User) error {
 	followedL, err := s.Queries.GetFeedFollowsForUser(context.Background(), user.ID)
 	if err != nil {
 		return fmt.Errorf("error getting list of followed feeds - %v", err)

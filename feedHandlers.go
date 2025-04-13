@@ -3,7 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
-	"html"
+	"time"
 
 	"log"
 
@@ -12,21 +12,23 @@ import (
 )
 
 func handlerFeedFuncs(s *state, cmd command) error {
-	feed, err := fetchFeed(context.Background(), "https://www.wagslane.dev/index.xml")
+	if len(cmd.flags) != 1 {
+		log.Fatalf("usage: %v <name> <time_between_reqs>", cmd.name)
+	}
+	time_between_reqs, err := time.ParseDuration(cmd.flags[0])
 	if err != nil {
-		return fmt.Errorf("error handling feed - %v", err)
+		return fmt.Errorf("error parsing time into time duration - %v", err)
 	}
-	fmt.Println(html.UnescapeString(feed.Channel.Title))
-	fmt.Println(feed.Channel.Link)
-	fmt.Println(html.UnescapeString(feed.Channel.Description))
-	for _, item := range feed.Channel.Item {
-		fmt.Println(html.UnescapeString(item.Title))
-		fmt.Println(item.Link)
-		fmt.Println(html.UnescapeString(item.Description))
-		fmt.Println(item.PubDate)
-	}
-	return nil
-}
+
+	fmt.Printf("Collecting feed every %v\n", time_between_reqs)
+
+	tick := time.NewTicker(time_between_reqs)
+
+	for ; ; <-tick.C {
+		fmt.Println("Collecting...")
+		scrapeFeeds(s, context.Background())
+	} //no necesitas devolver nada aunque tenga que devolver un error
+} //go entiende que es un bucle sin fin
 
 func handlerAddFeed(s *state, cmd command, user database.User) error {
 	if len(cmd.flags) != 2 {

@@ -52,3 +52,24 @@ func handlerAddFeed(s *state, cmd command) error {
 	fmt.Println(feed.UserID.String())
 	return nil
 }
+
+func handlerListFeeds(s *state, cmd command) error {
+	feedL, err := s.Queries.FeedList(context.Background())
+	if err != nil {
+		return fmt.Errorf("error getting feed list -%v", err)
+	}
+	if len(feedL) == 0 { //Tienes que revisar que la lista no esté vacía. Si lo está, no es un error
+		fmt.Println("No feeds found")
+		return nil
+	}
+	for _, feed := range feedL {
+		username, err := s.Queries.GetUserByID(context.Background(), feed.UserID)
+		if err != nil {
+			return fmt.Errorf("error getting the creator's name for the feed -%v", err)
+		}
+		fmt.Printf("* Name: %v\n", feed.Name)
+		fmt.Printf("* URL: %v\n", feed.Url)
+		fmt.Printf("* Created by: %v\n", username.Name)
+	}
+	return nil
+}

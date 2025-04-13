@@ -62,10 +62,10 @@ func main() {
 	mapCommands.register("reset", handlerReset)
 	mapCommands.register("users", handlerAllUsers)
 	mapCommands.register("agg", handlerFeedFuncs)
-	mapCommands.register("addfeed", handlerAddFeed)
+	mapCommands.register("addfeed", middlewareLoggedIn(handlerAddFeed))
 	mapCommands.register("feeds", handlerListFeeds)
-	mapCommands.register("follow", handlerFollowFeed)
-	mapCommands.register("following", handlerFollowingFeeds)
+	mapCommands.register("follow", middlewareLoggedIn(handlerFollowFeed))
+	mapCommands.register("following", middlewareLoggedIn(handlerFollowingFeeds))
 
 	//Run segment
 	if len(os.Args) <= 1 {

@@ -8,3 +8,6 @@ VALUES (
     $3,
     $4
 ) RETURNING *;
+
+-- name: FeedList :many
+SELECT name, url, user_id FROM feeds;

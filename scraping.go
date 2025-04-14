@@ -2,7 +2,13 @@ package main
 
 import (
 	"context"
+	"database/sql"
 	"fmt"
+	"strings"
+	"time"
+
+	"github.com/arturogood17/aggreGator/internal/database"
+	"github.com/google/uuid"
 )
 
 func scrapeFeeds(s *state, ctx context.Context) {
@@ -32,7 +38,26 @@ func scrapeFeeds(s *state, ctx context.Context) {
 		return
 	}
 	for _, post := range rssFeed.Channel.Item {
-		fmt.Printf("* Title: %v\n", post.Title)
+		published, err := time.Parse(time.RFC1123, post.PubDate)
+		if err != nil {
+			fmt.Printf("Error trying to created published date - %v\n", err)
+			return
+		}
+		if _, err := s.Queries.CreatePost(ctx, database.CreatePostParams{
+			ID:          uuid.New(),
+			Title:       post.Title,
+			Url:         post.Link,
+			Description: sql.NullString{String: post.Description, Valid: true},
+			PublishedAt: published,
+			FeedID:      feed.ID,
+		}); err != nil {
+			if strings.Contains(err.Error(), "duplicate key value violates unique constraint") {
+				continue
+			} else {
+				fmt.Printf("Error saving post in database - %v\n", err)
+				return
+			}
+		}
 	}
 	fmt.Printf("Feed %s collected, %v posts found\n", feed.Name, len(rssFeed.Channel.Item))
 }

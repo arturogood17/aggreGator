@@ -67,6 +67,7 @@ func main() {
 	mapCommands.register("follow", middlewareLoggedIn(handlerFollowFeed))
 	mapCommands.register("following", middlewareLoggedIn(handlerFollowingFeeds))
 	mapCommands.register("unfollow", middlewareLoggedIn(handlerUnfollow))
+	mapCommands.register("browse", middlewareLoggedIn(handlerBrowsingPosts))
 
 	//Run segment
 	if len(os.Args) <= 1 {

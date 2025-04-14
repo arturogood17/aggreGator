@@ -7,10 +7,10 @@ aggregate posts from the URLs stored in the database.
 
 The user needs to have installed **Postgres and Go**.
 
-### Installation process
+## Installation process
 
 You can install this CLI by going to github, taking the url and typing into your command line: ***go install <url>***
 
-#### Commands
+## Commands
 
 Some of the commands you can run are: addfeed (to add a feed), agg (to aggregate posts), browse (to show posts), etc. 

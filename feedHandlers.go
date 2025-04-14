@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"strconv"
 	"time"
 
 	"log"
@@ -131,5 +132,34 @@ func handlerUnfollow(s *state, cmd command, user database.User) error {
 		return fmt.Errorf("error deleting feed - %v", err)
 	}
 	fmt.Printf("Feed %v successfully deleted\n", feed.Name)
+	return nil
+}
+
+func handlerBrowsingPosts(s *state, cmd command, user database.User) error {
+	if len(cmd.flags) > 1 {
+		return fmt.Errorf("usage: %v <limit_of_posts>", cmd.name)
+	}
+	limit := 2
+	if len(cmd.flags) != 0 {
+		var err error
+		limit, err = strconv.Atoi(cmd.flags[0])
+		if err != nil {
+			return fmt.Errorf("error converting string into int - %v", err)
+		}
+	}
+	posts, err := s.Queries.GetPostsForUsers(context.Background(), database.GetPostsForUsersParams{
+		UserID: user.ID,
+		Limit:  int32(limit),
+	})
+	if err != nil {
+		return fmt.Errorf("error fetching posts to show - %v", err)
+	}
+	for _, p := range posts {
+		fmt.Printf("* ID: %v\n", p.ID)
+		fmt.Printf("* Title: %v\n", p.Title)
+		fmt.Printf("* Description: %v\n", p.Description.String)
+		fmt.Printf("* Published at: %v\n", p.PublishedAt)
+		fmt.Println()
+	}
 	return nil
 }

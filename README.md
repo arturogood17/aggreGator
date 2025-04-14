@@ -9,7 +9,7 @@ The user needs to have installed **Postgres and Go**.
 
 ## Installation process
 
-You can install this CLI by going to github, taking the url and typing into your command line: ***go install <url>***
+You can install the gator CLI by going to github, taking the url and typing into your command line: ***go install <url>***
 
 ## Commands
 
